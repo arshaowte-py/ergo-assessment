@@ -18,6 +18,7 @@ function q(value: string): string {
 
 async function findInFolder(name: string, folderId: string): Promise<DriveFile | null> {
   const res = await googleFetch<{ files?: DriveFile[] }>(DRIVE_BASE, {
+    auth: "drive",
     query: {
       q: `name = '${q(name)}' and '${q(folderId)}' in parents and trashed = false`,
       fields: `files(${FILE_FIELDS})`,
@@ -32,6 +33,7 @@ async function findInFolder(name: string, folderId: string): Promise<DriveFile |
 async function shareAnyoneWithLink(fileId: string): Promise<void> {
   try {
     await googleFetch(`${DRIVE_BASE}/${fileId}/permissions`, {
+      auth: "drive",
       method: "POST",
       query: { supportsAllDrives: true, sendNotificationEmail: false },
       json: { role: "reader", type: "anyone" },
@@ -60,6 +62,7 @@ export async function uploadFile(opts: {
 
   if (existing) {
     const updated = await googleFetch<DriveFile>(`${DRIVE_UPLOAD_BASE}/${existing.id}`, {
+      auth: "drive",
       method: "PATCH",
       query: { uploadType: "media", fields: FILE_FIELDS, supportsAllDrives: true },
       headers: { "Content-Type": opts.mimeType },
@@ -97,6 +100,7 @@ async function uploadMultipart(opts: {
   const body = Buffer.concat([head, opts.data, tail]);
 
   return googleFetch<DriveFile>(DRIVE_UPLOAD_BASE, {
+    auth: "drive",
     method: "POST",
     query: { uploadType: "multipart", fields: FILE_FIELDS, supportsAllDrives: true },
     headers: { "Content-Type": `multipart/related; boundary=${boundary}` },
@@ -123,12 +127,14 @@ export async function convertHtmlToPdfViaDrive(html: string): Promise<Buffer> {
 
   try {
     const res = await googleFetch<Response>(`${DRIVE_BASE}/${doc.id}/export`, {
+      auth: "drive",
       query: { mimeType: "application/pdf" },
       raw: true,
     });
     return Buffer.from(await res.arrayBuffer());
   } finally {
     await googleFetch(`${DRIVE_BASE}/${doc.id}`, {
+      auth: "drive",
       method: "DELETE",
       query: { supportsAllDrives: true },
     }).catch(() => {

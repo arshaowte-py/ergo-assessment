@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { env, privateKeyStatus } from "@/lib/env";
+import { driveIdentity } from "@/lib/google";
 import { describeError, jsonResponse, preflight } from "@/lib/http";
 import { sheetStatus } from "@/lib/sheet";
 
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
     privateKey: privateKeyStatus(),
     sheetId: Boolean(env.sheetId),
     driveFolder: Boolean(env.driveFolderId),
+    driveAuth: driveIdentity(),
     adminPassword: Boolean(env.adminPassword),
     apiSecret: Boolean(env.apiSecret),
     pdfEngine: env.pdfEngine,
