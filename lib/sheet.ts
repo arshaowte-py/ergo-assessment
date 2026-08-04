@@ -95,7 +95,10 @@ export async function upsertRow(
       {
         method: "POST",
         query: {
-          valueInputOption: "USER_ENTERED",
+          // RAW, not USER_ENTERED: Sheets would otherwise coerce "3/4" (the
+          // Photo count format) into the date 3 April, and phone numbers into
+          // floats. Everything the portal sends is already display-ready.
+          valueInputOption: "RAW",
           insertDataOption: "INSERT_ROWS",
           includeValuesInResponse: false,
         },
@@ -122,7 +125,7 @@ export async function upsertRow(
     )}`,
     {
       method: "PUT",
-      query: { valueInputOption: "USER_ENTERED" },
+      query: { valueInputOption: "RAW" },
       json: { values: [values] },
     },
   );

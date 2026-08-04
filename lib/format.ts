@@ -52,6 +52,18 @@ export function photoLinks(row: AssessmentRow): { angle: PhotoAngle; url: string
   })).filter((p) => p.url);
 }
 
+/**
+ * "Photo count" is stored as `n/4`. Rows written by the old Apps Script backend
+ * (which wrote through Sheets' value parser) can hold a date serial instead —
+ * "3/4" became 3 April. Fall back to counting the photo link columns, which is
+ * what the server now writes anyway.
+ */
+export function photoCountLabel(row: AssessmentRow): string {
+  const raw = String(row["Photo count"] ?? "").trim();
+  if (/^\d\s*\/\s*4$/.test(raw)) return raw;
+  return `${photoLinks(row).length}/4`;
+}
+
 export function toNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   const n = Number(String(value ?? "").trim());

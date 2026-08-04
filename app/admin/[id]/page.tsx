@@ -9,6 +9,7 @@ import {
   parseKeyed,
   parsePain,
   parseProducts,
+  photoCountLabel,
   photoLinks,
   splitList,
   toNumber,
@@ -197,7 +198,7 @@ export default async function AssessmentDetailPage({
         </div>
 
         <div className="space-y-5">
-          <Section title={`Photos (${displayValue(row["Photo count"])})`}>
+          <Section title={`Photos (${photoCountLabel(row)})`}>
             {photos.length ? (
               <div className="grid grid-cols-2 gap-3">
                 {photos.map((p) => {

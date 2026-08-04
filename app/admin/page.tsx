@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FilterBar } from "@/components/filter-bar";
 import { BandPill, StagePill } from "@/components/pills";
-import { displayValue, isoDate, toNumber } from "@/lib/format";
+import { displayValue, isoDate, photoCountLabel, toNumber } from "@/lib/format";
 import { parseFilters, queryAssessments, SortDir, SortKey } from "@/lib/query";
 import { AssessmentRow } from "@/lib/schema";
 
@@ -142,7 +142,7 @@ function Row({ row }: { row: AssessmentRow }) {
         <StagePill value={row["Stage"]} />
       </td>
       <td className="px-3 py-2.5 text-right tabular-nums text-slate">
-        {displayValue(row["Photo count"])}
+        {photoCountLabel(row)}
       </td>
       <td className="px-3 py-2.5">
         {pdf ? (
