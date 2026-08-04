@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+build
+.DS_Store
+*.pem
+
+# local env files — never commit the service-account key
+.env
+.env.local
+.env*.local
+service-account.json
+
+.vercel
+next-env.d.ts
+*.tsbuildinfo
