@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { env } from "@/lib/env";
+import { env, privateKeyStatus } from "@/lib/env";
 import { describeError, jsonResponse, preflight } from "@/lib/http";
 import { sheetStatus } from "@/lib/sheet";
 
@@ -14,7 +14,7 @@ export async function OPTIONS(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const config = {
     serviceAccount: Boolean(env.serviceAccountEmail),
-    privateKey: Boolean(env.privateKey),
+    privateKey: privateKeyStatus(),
     sheetId: Boolean(env.sheetId),
     driveFolder: Boolean(env.driveFolderId),
     adminPassword: Boolean(env.adminPassword),
