@@ -1,0 +1,125 @@
+{
+  "meta": {
+    "id": "FEC-260804-V2N",
+    "date": "2026-08-04",
+    "type": "In-Store",
+    "store": "",
+    "physio": ""
+  },
+  "cust": {
+    "name": "",
+    "age": "",
+    "phone": "",
+    "email": "",
+    "occupation": "",
+    "company": "",
+    "mode": "",
+    "device": "",
+    "workH": "",
+    "sitH": "",
+    "screenH": "",
+    "gender": "",
+    "height": "",
+    "weight": "",
+    "medical": "",
+    "conditions": []
+  },
+  "reasons": [],
+  "marks": [],
+  "pain": [],
+  "redflags": [],
+  "life": {
+    "breaks": "",
+    "sitBout": "",
+    "activity": "",
+    "owned": [],
+    "setting": []
+  },
+  "rosa": {
+    "a1": {
+      "b": "",
+      "m": []
+    },
+    "a2": {
+      "b": "",
+      "m": []
+    },
+    "a3": {
+      "b": "",
+      "m": []
+    },
+    "a4": {
+      "b": "",
+      "m": []
+    },
+    "b1": {
+      "b": "",
+      "m": []
+    },
+    "b2": {
+      "b": "",
+      "m": []
+    },
+    "c1": {
+      "b": "",
+      "m": []
+    },
+    "c2": {
+      "b": "",
+      "m": []
+    },
+    "durA": "",
+    "durMon": "",
+    "durPhone": "",
+    "durMouse": "",
+    "durKey": ""
+  },
+  "submitted": false,
+  "submittedAt": "",
+  "acts": {
+    "onspot": [],
+    "work": [],
+    "habit": [],
+    "onspotOther": "",
+    "workOther": "",
+    "habitOther": ""
+  },
+  "picks": [],
+  "intent": {},
+  "fu": {
+    "reportBy": "2026-08-06",
+    "date": "2026-09-03",
+    "type": "",
+    "outcome": "",
+    "purchase": "",
+    "orderId": "",
+    "voucher": ""
+  },
+  "referrals": [],
+  "consent": false,
+  "photoConsent": false,
+  "fee": {
+    "amount": 499,
+    "status": "",
+    "mode": "",
+    "code": "",
+    "issuedAt": "",
+    "expiry": ""
+  },
+  "ws": {},
+  "wsq": {},
+  "photos": {},
+  "photoNotes": {},
+  "nih": {},
+  "filledBy": {
+    "details": "",
+    "habits": "",
+    "rosa": "Physiotherapist",
+    "postural": "Physiotherapist",
+    "workspace": "Physiotherapist"
+  },
+  "ui": {
+    "markKind": "pain"
+  },
+  "rep": null
+}
