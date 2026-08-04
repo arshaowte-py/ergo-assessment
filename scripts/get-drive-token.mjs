@@ -17,7 +17,18 @@ import { spawn } from "node:child_process";
 
 const PORT = 53682;
 const REDIRECT = `http://127.0.0.1:${PORT}/callback`;
-const SCOPE = "https://www.googleapis.com/auth/drive";
+/**
+ * drive.file — per-file access to what this app creates — rather than the full
+ * `drive` scope.
+ *
+ * Full `drive` is a *restricted* scope: an external OAuth app can only leave
+ * "Testing" for it by passing Google verification and a paid security
+ * assessment, and refresh tokens issued while in Testing expire after 7 days.
+ * drive.file is non-sensitive, so the consent screen can be published
+ * immediately and tokens are long-lived. It is enough here: the app only ever
+ * creates, updates, and shares its own photo and PDF files.
+ */
+const SCOPE = "https://www.googleapis.com/auth/drive.file";
 
 const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
@@ -100,18 +111,41 @@ if (!res.ok || !token.refresh_token) {
   process.exit(1);
 }
 
-// Confirm the token actually reaches the target folder before declaring success.
+// Confirm the token can actually write into the target folder.
+//
+// Under drive.file the app can't *read* a folder it didn't create, so probing
+// the folder's metadata would 404 even when uploads work fine. Create a real
+// file and delete it instead — that is the operation we care about.
 if (process.env.DRIVE_FOLDER_ID) {
-  const check = await fetch(
-    `https://www.googleapis.com/drive/v3/files/${process.env.DRIVE_FOLDER_ID}?fields=name,capabilities/canAddChildren`,
-    { headers: { Authorization: `Bearer ${token.access_token}` } },
+  const probe = await fetch(
+    "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token.access_token}`,
+        "Content-Type": "multipart/related; boundary=probe",
+      },
+      body:
+        "--probe\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n" +
+        JSON.stringify({
+          name: "ergo-write-probe.txt",
+          parents: [process.env.DRIVE_FOLDER_ID],
+        }) +
+        "\r\n--probe\r\nContent-Type: text/plain\r\n\r\nprobe\r\n--probe--\r\n",
+    },
   );
-  const folder = await check.json();
-  console.log(
-    check.ok && folder.capabilities?.canAddChildren
-      ? `\nVerified: can write to Drive folder "${folder.name}".`
-      : `\nWARNING: could not confirm write access to DRIVE_FOLDER_ID.\n${JSON.stringify(folder)}`,
-  );
+  const created = await probe.json();
+  if (probe.ok && created.id) {
+    await fetch(`https://www.googleapis.com/drive/v3/files/${created.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token.access_token}` },
+    });
+    console.log("\nVerified: wrote and removed a test file in DRIVE_FOLDER_ID.");
+  } else {
+    console.log(
+      `\nWARNING: could not write to DRIVE_FOLDER_ID.\n${JSON.stringify(created)}`,
+    );
+  }
 }
 
 console.log(`

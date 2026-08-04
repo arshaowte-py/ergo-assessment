@@ -42,9 +42,13 @@ credentials.
    an **OAuth client ID** → **Web application**, with the authorised redirect URI
    `http://127.0.0.1:53682/callback`.
 2. Put the client ID and secret in `.env.local`.
-3. Set the **OAuth consent screen** publishing status to **In production**.
-   While it says *Testing*, Google expires refresh tokens after 7 days and
-   uploads will silently start failing a week later.
+3. Set the **OAuth consent screen** publishing status to **In production**
+   (Google Auth Platform → Audience → Publish app). While it says *Testing*,
+   Google expires refresh tokens after 7 days and uploads start failing a week
+   later. The app requests only `drive.file`, which is a non-sensitive scope,
+   so publishing needs no verification and shows no warning screen. Requesting
+   the full `drive` scope instead would make this impossible — restricted
+   scopes require Google verification and a paid security assessment.
 4. Run `npm run auth:drive`, approve the consent screen, and copy the printed
    `GOOGLE_OAUTH_REFRESH_TOKEN` into `.env.local` and Vercel.
 
