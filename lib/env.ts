@@ -81,6 +81,20 @@ export const env = {
   get driveFolderId() {
     return read("DRIVE_FOLDER_ID");
   },
+  /**
+   * OAuth credentials for a real Google account, used only for Drive uploads.
+   * Service accounts get no Drive storage quota, so file creation 403s unless
+   * the folder is on a Shared Drive (Workspace only).
+   */
+  get oauthClientId() {
+    return read("GOOGLE_OAUTH_CLIENT_ID");
+  },
+  get oauthClientSecret() {
+    return read("GOOGLE_OAUTH_CLIENT_SECRET");
+  },
+  get oauthRefreshToken() {
+    return read("GOOGLE_OAUTH_REFRESH_TOKEN");
+  },
   get adminPassword() {
     return read("ADMIN_PASSWORD");
   },

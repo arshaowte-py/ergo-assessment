@@ -10,7 +10,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "sync:report-css": "node scripts/extract-report-css.mjs",
-    "init:sheet": "node --env-file=.env.local scripts/init-sheet.mjs"
+    "init:sheet": "node --env-file=.env.local scripts/init-sheet.mjs",
+    "auth:drive": "node --env-file=.env.local scripts/get-drive-token.mjs"
   },
   "dependencies": {
     "@sparticuz/chromium": "^131.0.0",

@@ -9,7 +9,8 @@ the dashboard the team reads.
 - **Admin** — `/admin` list, `/admin/[id]` detail, `/admin/stats` summary.
 
 Stack: Next.js 15 (App Router) on Vercel, Tailwind v4, Google Sheets + Drive
-REST APIs via a service account, headless Chromium for PDF rendering.
+REST APIs, headless Chromium for PDF rendering. Sheets is accessed with a
+service account; Drive uploads use OAuth (see below for why).
 
 ---
 
@@ -24,6 +25,31 @@ REST APIs via a service account, headless Chromium for PDF rendering.
 
 Nothing works until step 3 is done — a service account is a separate identity and
 has no access to your files by default.
+
+### Drive uploads need OAuth, not the service account
+
+Google gives service accounts **no Drive storage quota**. Sharing the folder
+with one is not enough: `files.create` returns
+
+> `403 Service Accounts do not have storage quota. Leverage shared drives, or use OAuth delegation`
+
+Shared Drives and OAuth delegation both require Google Workspace, so on a
+personal Google account the fix is to upload as *yourself*. Sheets is unaffected
+— it edits an existing file rather than creating one — so only Drive uses these
+credentials.
+
+1. At [Credentials](https://console.cloud.google.com/apis/credentials), create
+   an **OAuth client ID** → **Web application**, with the authorised redirect URI
+   `http://127.0.0.1:53682/callback`.
+2. Put the client ID and secret in `.env.local`.
+3. Set the **OAuth consent screen** publishing status to **In production**.
+   While it says *Testing*, Google expires refresh tokens after 7 days and
+   uploads will silently start failing a week later.
+4. Run `npm run auth:drive`, approve the consent screen, and copy the printed
+   `GOOGLE_OAUTH_REFRESH_TOKEN` into `.env.local` and Vercel.
+
+If you later move the folder to a Shared Drive, leave the three OAuth variables
+blank and the service account is used instead.
 
 ## 2. Local run
 
@@ -168,6 +194,7 @@ reference/                 sheet headers, sample payload, old Apps Script
 context/CONTEXT.md         the original handoff spec
 scripts/
   init-sheet.mjs           setup + connectivity check
+  get-drive-token.mjs      mint the Drive OAuth refresh token
   extract-report-css.mjs   regenerate the report stylesheet
   test-pdf.mjs             render a sample PDF locally
 ```
@@ -184,8 +211,11 @@ scripts/
   syncs for the same assessment landing within the same second could both append.
   The old Apps Script had the same behaviour; a `Purchase`-style dedupe pass on
   the Sheet is the fallback if it ever bites.
-- **Drive quota.** Files are owned by the service account. If uploads start
-  failing with a quota error, move the folder to a Shared Drive and add the
-  service account as a member.
+- **Drive quota.** Uploads run as the OAuth account and count against its 15GB.
+  Photos are ~60–150KB and a report PDF ~80KB, so roughly 500KB per assessment —
+  about 30,000 assessments before that matters.
+- **Drive identity.** `/api/health` reports `driveAuth` as `oauth` or
+  `service-account`. If it says `service-account` on a personal Google account,
+  uploads will 403 — the OAuth variables aren't reaching the deployment.
 - **Retry queue.** Failed syncs are queued in `localStorage` under `fec_syncq`
   and flushed on the portal's next load.
