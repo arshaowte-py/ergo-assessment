@@ -14,3 +14,6 @@ service-account.json
 .vercel
 next-env.d.ts
 *.tsbuildinfo
+
+# generated Modelfiles (values substituted by setup.sh)
+tools/nemotron-local/generated/

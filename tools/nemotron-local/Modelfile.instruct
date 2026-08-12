@@ -1,0 +1,20 @@
+# Nemotron 3 — instruct preset.
+#
+# No reasoning trace: the model answers directly. Use this for chat, extraction,
+# classification, summarising, and anything you want to feel snappy. The
+# /no_think directive suppresses the <think> block.
+#
+# Near-greedy sampling (top_k 1) follows NVIDIA's recommendation for non-thinking
+# mode and makes output largely reproducible.
+# __BASE__ and __CTX__ are substituted by setup.sh — edit that, not this.
+
+FROM __BASE__
+
+PARAMETER temperature 0.2
+PARAMETER top_k 1
+PARAMETER num_ctx __CTX__
+
+SYSTEM """/no_think
+You are a helpful assistant running locally on the user's machine. Answer
+directly and concisely, without narrating your reasoning. If you are unsure of a
+fact, say so rather than inventing it."""

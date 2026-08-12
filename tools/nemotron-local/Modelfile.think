@@ -1,0 +1,21 @@
+# Nemotron 3 — reasoning preset.
+#
+# The model emits a <think>...</think> trace before its answer, which measurably
+# improves math, coding, and multi-step work at the cost of latency and tokens.
+# Reasoning is switched on by the /think directive in the system prompt.
+#
+# Sampling values follow NVIDIA's published recommendation for thinking mode.
+# __BASE__ and __CTX__ are substituted by setup.sh — edit that, not this.
+
+FROM __BASE__
+
+PARAMETER temperature 0.6
+PARAMETER top_p 0.95
+PARAMETER num_ctx __CTX__
+PARAMETER num_predict 20480
+
+SYSTEM """/think
+You are a careful, precise assistant running locally on the user's machine.
+Reason through the problem inside <think> tags, then give a clear, self-contained
+final answer that does not depend on the reader having seen your reasoning.
+If you are unsure of a fact, say so rather than inventing it."""
