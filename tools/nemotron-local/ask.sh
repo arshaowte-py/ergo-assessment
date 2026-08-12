@@ -43,4 +43,14 @@ if [ -z "${PROMPT//[[:space:]]/}" ]; then
   exit 64
 fi
 
-exec ollama run "$MODEL" "$PROMPT"
+# The /no_think directive in the system prompt is a model-level hint and Ollama
+# does not always honour it — the runner has its own thinking switch that wins.
+# Set it explicitly, when this version of Ollama supports the flag.
+THINK_ARG=""
+if ollama run --help 2>&1 | grep -q -- '--think'; then
+  if [ "$MODEL" = "nemotron-think" ]; then THINK_ARG="--think=true"; else THINK_ARG="--think=false"; fi
+fi
+
+# Unquoted on purpose: empty means "pass nothing", and the value never contains
+# whitespace. Written this way to stay safe under macOS's stock bash 3.2.
+exec ollama run ${THINK_ARG:+$THINK_ARG} "$MODEL" "$PROMPT"

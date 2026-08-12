@@ -1,8 +1,13 @@
 # Nemotron 3 — instruct preset.
 #
 # No reasoning trace: the model answers directly. Use this for chat, extraction,
-# classification, summarising, and anything you want to feel snappy. The
-# /no_think directive suppresses the <think> block.
+# classification, summarising, and anything you want to feel snappy.
+#
+# The /no_think directive below is a hint to the model. Ollama does not always
+# honour it — its own thinking switch wins, and Ollama has no Modelfile
+# equivalent (PARAMETER think false is rejected as an unknown parameter). So also
+# pass --think=false on the CLI, "think": false via the API, or /set nothink
+# inside a chat. ask.sh does this for you.
 #
 # Near-greedy sampling (top_k 1) follows NVIDIA's recommendation for non-thinking
 # mode and makes output largely reproducible.

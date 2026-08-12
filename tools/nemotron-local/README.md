@@ -71,6 +71,23 @@ mode (reasoning: `temperature 0.6`, `top_p 0.95`; instruct: `temperature 0.2`,
 `top_k 1`). See `Modelfile.think` and `Modelfile.instruct` — edit those and
 re-run `setup.sh` to change the personality or defaults.
 
+**The system-prompt directive is not enough on its own.** Ollama has its own
+thinking switch that overrides it, and no Modelfile equivalent — `PARAMETER
+think false` is rejected as an unknown parameter. So if you want reasoning
+genuinely off, set it at the Ollama level too:
+
+```bash
+ollama run nemotron-fast --think=false      # per command
+/set nothink                                # inside a running chat
+```
+
+```jsonc
+{ "model": "nemotron-fast", "think": false, "messages": [ ... ] }   // API
+```
+
+`ask.sh` applies the right flag for you, so `./ask.sh` never shows a reasoning
+trace and `./ask.sh --think` always does.
+
 ## Context length
 
 The model supports up to a 1M-token context, but the KV cache is charged against
@@ -111,6 +128,14 @@ console.log(res.choices[0].message.content);
 The native `/api/generate` and `/api/chat` endpoints are also available and give
 you timing fields (`eval_count`, `eval_duration`) useful for benchmarking.
 
+Two gotchas when calling a reasoning model over HTTP:
+
+- Add `"think": false` to the body unless you want reasoning tokens. You pay for
+  them in latency either way.
+- On the OpenAI-compatible route, reasoning models can put the trace in a
+  separate `reasoning` field and leave `content` empty. If your integration
+  shows blank replies, that's why — read both fields, or turn thinking off.
+
 ## Troubleshooting
 
 **Out of memory, or the whole Mac crawls.** The model doesn't fit. Lower `--ctx`
@@ -132,8 +157,15 @@ app; launch it once from Applications, which sets up the CLI symlink.
 **Server won't start.** `setup.sh` logs to `/tmp/ollama-serve.log`. A stale
 process is the usual cause — `pkill ollama` and re-run.
 
-**Answers are wrapped in `<think>` when you didn't want them.** You're on
-`nemotron-think`. Use `nemotron-fast`, or prefix a message with `/no_think`.
+**The model answers questions you never asked.** `ollama run` opens an
+interactive chat session, so if you paste several lines at once, the first line
+runs and every line after it is sent to the model as a message. Run one command
+at a time; `/bye` exits the chat and gets you back to a shell prompt.
+
+**You still get a reasoning trace on `nemotron-fast`.** The system-prompt
+directive alone doesn't bind — see [Thinking mode](#thinking-mode). Use
+`ollama run nemotron-fast --think=false`, or `/set nothink` inside the chat.
+Check what the preset actually holds with `ollama show nemotron-fast --system`.
 
 ## Removing it
 

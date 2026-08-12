@@ -203,6 +203,7 @@ say "Smoke test (first run also loads the model into memory, so allow a minute)"
 RESP="$(curl -fsS --max-time 600 "${API}/api/generate" -d "{
   \"model\": \"nemotron-fast\",
   \"prompt\": \"Reply with exactly: ready\",
+  \"think\": false,
   \"stream\": false
 }")" || die "the model failed to respond. See /tmp/ollama-serve.log."
 
@@ -216,11 +217,17 @@ fi
 printf '\n%s\n' "${G}Nemotron 3 is running locally.${N}"
 cat <<EOF
 
-  Chat, fast answers      ollama run nemotron-fast
+Run ONE of these at a time. 'ollama run' opens an interactive chat, so anything
+you paste after it becomes a message to the model rather than a shell command.
+
+  Chat, fast answers      ollama run nemotron-fast --think=false
   Chat, full reasoning    ollama run nemotron-think
   One-shot question       ${HERE}/ask.sh "why do wrists hurt at a low desk?"
 
+  Inside a chat: /set nothink turns reasoning off, /bye exits.
+
   OpenAI-compatible API   ${API}/v1/chat/completions   (model: nemotron-fast)
+                          send "think": false to suppress reasoning
 
 Everything runs on your Mac. No data leaves the machine, and it works offline
 once the weights are pulled.
