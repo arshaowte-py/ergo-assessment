@@ -25,6 +25,37 @@ ollama run nemotron-think         # chat, full reasoning trace
 Re-running `setup.sh` is safe — every step checks before it acts. Use
 `--dry-run` to see the plan without changing anything.
 
+## Everyday use
+
+Typing the full path gets old. Give it a short name once:
+
+```bash
+echo "alias nem='$PWD/ask.sh'" >> ~/.zshrc
+source ~/.zshrc
+```
+
+Then from any directory:
+
+```bash
+nem "what's a good monitor height for a 5'4\" person?"
+nem --think "6 clients, 45 min each from 09:00, 15 min break after every 2nd. When done?"
+
+nem "what does this do and what would break it?" < some-script.sh
+pbpaste | nem "rewrite this as three bullet points"
+nem "extract name, phone and email as JSON" <<< "Jane Doe, 07700 900123, j@d.com"
+
+# batch a folder — no API bill, nothing uploaded
+for f in ~/Documents/notes/*.txt; do
+  echo "== $f"; nem "one-line summary" < "$f"
+done
+```
+
+`nem` never shows a reasoning trace; `nem --think` always does. Use `ollama run
+nemotron-fast --think=false` when you want a back-and-forth conversation instead
+of one-shot answers (`/bye` to leave).
+
+Which variant you actually have: `ollama list`.
+
 ## Which variant you get
 
 Nemotron 3 Nano is a hybrid **Mamba-2 + MoE** design rather than a plain
