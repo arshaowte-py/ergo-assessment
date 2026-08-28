@@ -1,4 +1,4 @@
-import { createPrivateKey } from "node:crypto";
+import { createHash, createPrivateKey } from "node:crypto";
 
 /** Central, validated access to configuration. */
 
@@ -137,6 +137,25 @@ export function privateKeyStatus(): string {
   } catch (err) {
     return `invalid: ${err instanceof Error ? err.message : String(err)}`;
   }
+}
+
+/**
+ * Identify *which* key value the deployment loaded, without revealing it.
+ *
+ * A hash of the base64 body plus its length is enough to tell "the right key,
+ * mangled in transit" (correct length, correct hash) from "the wrong string
+ * entirely" — a truncated paste, or the `MIIE...` placeholder out of
+ * .env.example, both of which produce the same opaque DECODER error.
+ */
+export function privateKeyFingerprint(): { length: number; sha256: string } | null {
+  const key = env.privateKey;
+  if (!key) return null;
+  const match = key.match(/-----BEGIN[^-]*-----([\s\S]*?)-----END/);
+  const body = (match ? match[1] : key).replace(/[^A-Za-z0-9+/=]/g, "");
+  return {
+    length: body.length,
+    sha256: createHash("sha256").update(body).digest("hex").slice(0, 12),
+  };
 }
 
 /** Throws a readable error rather than letting the Google client fail cryptically. */

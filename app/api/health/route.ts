@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { env, privateKeyStatus } from "@/lib/env";
+import { env, privateKeyFingerprint, privateKeyStatus } from "@/lib/env";
 import { driveIdentity } from "@/lib/google";
 import { describeError, jsonResponse, preflight } from "@/lib/http";
 import { sheetStatus } from "@/lib/sheet";
@@ -16,6 +16,9 @@ export async function GET(req: NextRequest) {
   const config = {
     serviceAccount: Boolean(env.serviceAccountEmail),
     privateKey: privateKeyStatus(),
+    privateKeyFingerprint: privateKeyFingerprint(),
+    // Bumped when the diagnostics change, so a stale deployment is obvious.
+    healthVersion: 2,
     sheetId: Boolean(env.sheetId),
     driveFolder: Boolean(env.driveFolderId),
     driveAuth: driveIdentity(),
