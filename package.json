@@ -1,0 +1,35 @@
+{
+  "name": "ergo-assessment-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend + admin dashboard for the Frido Ergo Assessment Portal",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "sync:report-css": "node scripts/extract-report-css.mjs",
+    "init:sheet": "node --env-file=.env.local scripts/init-sheet.mjs",
+    "auth:drive": "node --env-file=.env.local scripts/get-drive-token.mjs"
+  },
+  "dependencies": {
+    "@sparticuz/chromium": "^131.0.0",
+    "google-auth-library": "^9.15.0",
+    "next": "^15.1.0",
+    "puppeteer-core": "^23.10.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
