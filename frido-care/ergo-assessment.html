@@ -45,12 +45,26 @@ h1,h2,h3,.disp,.brand{font-family:'Gilroy','Outfit',system-ui,sans-serif}
 </style>
 <style>
 :root{
-  /* Frido Brand Book — #101820 dark, #FFD100 yellow hero, blue secondary */
-  --navy:#101820; --navy2:#2B3A46; --ink:#101820; --paper:#F4F6F8; --card:#FFFFFF;
-  --brand:#FFD100; --brand-soft:#FFF6CC;
-  --amber:#F5A300; --amber-soft:#FFF3D9; --line:#DDE3E8; --slate:#5C6B77;
-  --blue:#307FE2; --blue-soft:#E7F0FC;
-  --green:#2E9E5B; --red:#C0392B; --red-soft:#FBEAE7; --green-soft:#E7F6EC; --radius:14px;
+  /* ── Frido Brand Book 2024 ──────────────────────────────────────────────
+     Primary   (2.8): #101820 Pantone Black 6 C · #FFFFFF · #FFD100 Pantone 109 C
+     Secondary (2.9): #FF585D 178 C · #80E0A7 353 C · #DDE5ED 656 C
+                      #333F48 432 C · #5C88DA 2718 C · #307FE2 2727 C · #6CACE4 284 C
+     Illustration(2.15): #DB864E Pantone 7576 C
+     Type (2.11/2.12): Gilroy primary, Outfit secondary.
+
+     Two deliberate departures, both forced by legibility and both staying
+     inside a book hue family:
+       · Risk bands. The book's mint (#80E0A7) reads 1.60:1 on white and the
+         brand yellow 1.46:1 — neither is legible as clinical status. The band
+         colours below are those hues darkened to >=4.2:1; the book tints are
+         used as the pill backgrounds behind them.
+       · --slate is a lightened #333F48, so helper text keeps a step of
+         hierarchy below body copy. #333F48 itself is --navy2. */
+  --navy:#101820; --navy2:#333F48; --ink:#101820; --paper:#F5F7FA; --card:#FFFFFF;
+  --brand:#FFD100; --brand-soft:#FFF4C2;
+  --amber:#DB864E; --amber-soft:#FBEDE0; --line:#DDE5ED; --slate:#5A6570;
+  --blue:#307FE2; --blue-soft:#E4EFFB; --blue-2:#5C88DA; --blue-light:#6CACE4;
+  --green:#2E7D55; --red:#D64A50; --red-soft:#FDECEC; --green-soft:#E4F6EC; --radius:14px;
   --shadow:0 1px 2px rgba(16,24,32,.06),0 6px 18px rgba(16,24,32,.08);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -361,7 +375,7 @@ html.embedded .app{padding-top:0}
 #printDoc .snap .num{font-family:'Gilroy','Outfit';font-weight:800;font-size:42px;color:var(--navy);line-height:1}
 #printDoc .snap .den{font-family:'Gilroy','Outfit';font-weight:700;font-size:15px;color:#9AAaB8}
 #printDoc .pill{font-family:'Gilroy','Outfit';font-weight:700;font-size:10.5px;letter-spacing:.08em;padding:4px 12px;border-radius:999px;color:#fff}
-#printDoc .pill.LOW{background:var(--green)} #printDoc .pill.MODERATE{background:var(--amber);color:#4a3500} #printDoc .pill.HIGH{background:var(--red)}
+#printDoc .pill.LOW{background:var(--green)} #printDoc .pill.MODERATE{background:var(--amber);color:#3a2200} #printDoc .pill.HIGH{background:var(--red)}
 #printDoc .gauge{margin:2px 0 12px}
 #printDoc .snapline{font-size:12px;margin-top:5px}
 #printDoc .snapline .lbl{font-weight:700;color:var(--navy)}

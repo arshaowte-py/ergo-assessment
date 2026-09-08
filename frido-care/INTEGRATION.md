@@ -56,29 +56,60 @@ layer or prefix every selector) — not a five-minute job.
 
 ---
 
-## 2. Brand theme
+## 2. Brand theme — audited against Brand Book 2024
 
-The palette already comes from the Frido Brand Book and is defined once as
-tokens on `:root` — `--navy #101820`, `--brand #FFD100`, `--amber #F5A300`,
-`--blue #307FE2`, plus `--green` / `--red` for clinical status. Restyling starts
-and ends there.
+Tokens are now taken from the book rather than inherited. Every value lives once
+on `:root`; restyling starts and ends there.
 
-**One real gap was fixed here.** Every heading declared
-`font-family:'Gilroy','Outfit'`, but only Outfit was ever loaded — so the brand
-display face has never actually rendered in this app; headings silently fell
-back to Outfit. Gilroy is licensed and cannot be served from Google Fonts, so:
+### Colour: what the book says vs what the app had
+
+| Token | Was | Now | Source |
+|---|---|---|---|
+| `--navy` / `--ink` | `#101820` | `#101820` | ✅ Primary, Pantone Black 6 C |
+| `--card` | `#FFFFFF` | `#FFFFFF` | ✅ Primary |
+| `--brand` | `#FFD100` | `#FFD100` | ✅ Primary, Pantone 109 C |
+| `--blue` | `#307FE2` | `#307FE2` | ✅ Secondary, Pantone 2727 C |
+| `--line` | `#DDE3E8` | `#DDE5ED` | Was close but off — now Pantone 656 C exactly |
+| `--navy2` | `#2B3A46` | `#333F48` | Was invented — now Pantone 432 C |
+| `--amber` | `#F5A300` | `#DB864E` | **Was not in the book at all** — now Pantone 7576 C |
+| `--green` | `#2E9E5B` | `#2E7D55` | Darkened Pantone 353 C — see below |
+| `--red` | `#C0392B` | `#D64A50` | Darkened Pantone 178 C — see below |
+| `--slate` | `#5C6B77` | `#5A6570` | Lightened Pantone 432 C |
+
+Also added: `--blue-2` `#5C88DA` (2718 C) and `--blue-light` `#6CACE4` (284 C),
+which the book lists and the app never used.
+
+### Two deliberate departures
+
+Both stay inside a book hue family; neither is a free invention.
+
+**Risk bands.** Measured on white, the book's mint `#80E0A7` is **1.60:1** and
+the brand yellow `#FFD100` is **1.46:1**. Neither is legible as clinical status
+text or as a chart fill — WCAG wants 4.5:1 for text and 3:1 for fills. So the
+band colours are those same hues darkened to ≥4.2:1, and the pale book tints are
+used as the pill backgrounds behind them. Brand hue preserved, reading
+preserved.
+
+**`--slate`.** `#333F48` at 10.8:1 is nearly as dark as body copy, which
+flattens the hierarchy on a form this dense. Helper text uses a lightened step
+of the same colour; `#333F48` itself is `--navy2`.
+
+### Type
+
+The book names **Gilroy primary** and **Outfit secondary**, which is exactly the
+`'Gilroy','Outfit'` stack the app already declared — but **only Outfit was ever
+loaded**, so headings have silently rendered in the secondary face since day
+one. Gilroy is licensed and cannot come from Google Fonts:
 
 1. Put `Gilroy-Bold.woff2` and `Gilroy-ExtraBold.woff2` where your app serves static files.
 2. Set `window.FRIDO_FONT_BASE` to that directory.
 
-The `@font-face` rules are then generated at load. Leave it unset and the file
-behaves exactly as the original did — Outfit throughout — so this is safe to
-ship before the font files are in place.
+The `@font-face` rules are generated at load. Leave it unset and the file
+behaves as before, so this is safe to ship ahead of the font files. The book
+notes Regular/Medium/Bold are the working weights and Light/Italic are for
+special instances — the app only uses Bold and ExtraBold for display, which fits.
 
-A duplicated stack (`'Gilroy','Outfit','Gilroy','Outfit',sans-serif`) was also
-cleaned up.
-
----
+A duplicated `'Gilroy','Outfit','Gilroy','Outfit'` stack was also cleaned up.
 
 ## 3. Flow: what was repeating, and what changed
 
@@ -150,7 +181,9 @@ PDF. Useful for in-store tablets with unreliable connectivity.
 
 - [ ] Set `storagePrefix` to something Frido Care-specific.
 - [ ] Add `allow="camera"` if you iframe it, or photo capture silently fails.
-- [ ] Drop in the Gilroy woff2 files and set `FRIDO_FONT_BASE`, or accept Outfit headings.
+- [ ] Drop in the Gilroy woff2 files and set `FRIDO_FONT_BASE`. Until then headings
+      render in Outfit — the book's *secondary* face — which is the one visible
+      brand gap left in this build.
 - [ ] Decide iframe vs inline. If inline, scope the CSS first.
 - [ ] Point `apiUrl` at the backend and add the Frido Care origin to
       `ALLOWED_ORIGINS` on it, or the browser blocks the cross-origin POSTs.
