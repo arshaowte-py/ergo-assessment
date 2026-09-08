@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BandPill, StagePill } from "@/components/pills";
-import { driveThumbnailUrl } from "@/lib/drive";
+import { imageUrl } from "@/lib/storage";
 import {
   displayValue,
   formatDateTime,
@@ -202,7 +202,7 @@ export default async function AssessmentDetailPage({
             {photos.length ? (
               <div className="grid grid-cols-2 gap-3">
                 {photos.map((p) => {
-                  const thumb = driveThumbnailUrl(p.url, 800);
+                  const thumb = imageUrl(p.url, 800);
                   return (
                     <a
                       key={p.angle}

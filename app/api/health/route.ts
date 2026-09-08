@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { env, privateKeyFingerprint, privateKeyStatus } from "@/lib/env";
 import { driveIdentity } from "@/lib/google";
+import { storageBackend } from "@/lib/storage";
+import { bucketStatus } from "@/lib/supabase";
 import { describeError, jsonResponse, preflight } from "@/lib/http";
 import { sheetStatus } from "@/lib/sheet";
 
@@ -20,6 +22,7 @@ export async function GET(req: NextRequest) {
     // Bumped when the diagnostics change, so a stale deployment is obvious.
     healthVersion: 2,
     sheetId: Boolean(env.sheetId),
+    storage: storageBackend(),
     driveFolder: Boolean(env.driveFolderId),
     driveAuth: driveIdentity(),
     adminPassword: Boolean(env.adminPassword),
@@ -28,18 +31,25 @@ export async function GET(req: NextRequest) {
     allowedOrigins: env.allowedOrigins,
   };
 
+  // Only meaningful on the Supabase path; a failure here must not mask the
+  // sheet check below, which is the more important signal.
+  let bucket: Awaited<ReturnType<typeof bucketStatus>> | "unreachable" | null = null;
+  if (storageBackend() === "supabase") {
+    bucket = await bucketStatus().catch(() => "unreachable" as const);
+  }
+
   try {
     const status = await sheetStatus();
     return jsonResponse(req, {
       ok: true,
       msg: "Frido Ergo backend is live",
       ...status,
-      config,
+      config: { ...config, bucket },
     });
   } catch (err) {
     return jsonResponse(
       req,
-      { ok: false, error: describeError(err), config },
+      { ok: false, error: describeError(err), config: { ...config, bucket } },
       { status: 500 },
     );
   }

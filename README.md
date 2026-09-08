@@ -8,9 +8,9 @@ the dashboard the team reads.
   PDF in Drive, upserts one row per assessment into the Sheet.
 - **Admin** — `/admin` list, `/admin/[id]` detail, `/admin/stats` summary.
 
-Stack: Next.js 15 (App Router) on Vercel, Tailwind v4, Google Sheets + Drive
-REST APIs, headless Chromium for PDF rendering. Sheets is accessed with a
-service account; Drive uploads use OAuth (see below for why).
+Stack: Next.js 15 (App Router) on Vercel, Tailwind v4, headless Chromium for
+PDF rendering. Rows live in Google Sheets via a service account; files go to
+Supabase Storage, falling back to Google Drive (see below).
 
 ---
 
@@ -26,7 +26,38 @@ service account; Drive uploads use OAuth (see below for why).
 Nothing works until step 3 is done — a service account is a separate identity and
 has no access to your files by default.
 
-### Drive uploads need OAuth, not the service account
+### File storage: Supabase (recommended) or Drive
+
+Photos and report PDFs go to **Supabase Storage** when `SUPABASE_URL` and
+`SUPABASE_SERVICE_ROLE_KEY` are set, and to Google Drive otherwise. The Google
+Sheet is the database either way — this only changes where files live and what
+the links in the `Photo *` and `Report PDF` columns point at.
+
+Supabase is the easier path: a service-role key has no storage quota, no consent
+screen, and no refresh token to expire, which is what made the Drive route
+fragile (see below). Free tier gives 1 GB, and at roughly 500 KB per assessment
+that is about 2,000 assessments.
+
+```bash
+# 1. Create a project at supabase.com
+# 2. Settings -> API -> copy the Project URL and the service_role key
+# 3. Put both in .env.local, then:
+npm run init:supabase
+```
+
+That creates the public bucket and verifies an upload can be read back with no
+credentials — the same request a customer makes when opening a report link.
+
+**Keep the service_role key server-side.** It bypasses row-level security. It
+belongs in Vercel's environment variables and must never reach the portal or any
+browser.
+
+One caveat: Supabase pauses free projects after **7 days of inactivity**, and
+restoring is a manual click. At steady assessment volume this never triggers;
+during a long quiet stretch it will, and syncs fail until the project is
+resumed. Paid tiers remove the pause.
+
+### If you use Drive instead: it needs OAuth, not the service account
 
 Google gives service accounts **no Drive storage quota**. Sharing the folder
 with one is not enough: `files.create` returns
@@ -104,7 +135,7 @@ Also add the portal's origin to `ALLOWED_ORIGINS` if it isn't the default
 | `/api/assessments` | GET | Filtered, sorted, paginated list |
 | `/api/assessment/[id]` | GET | One assessment plus parsed sub-objects |
 | `/api/stats` | GET | Aggregates behind `/admin/stats` |
-| `/api/health` | GET | Connectivity + config check |
+| `/api/health` | GET | Connectivity + config check (reports the active storage backend) |
 
 ### `POST /api/submit`
 
@@ -165,9 +196,11 @@ Rendering uses headless Chromium (`@sparticuz/chromium` on Vercel). If it fails,
 unstyled — and flags it in `warnings`. Set `PDF_ENGINE=chromium` to fail loudly
 instead.
 
-**Drive files** are named `<AssessmentID>_<angle>.jpg` and
-`ErgoAssessment-<Customer>-<Date>.pdf`. Re-syncing updates the existing file in
-place, so links stay stable and duplicates don't pile up.
+**Stored files** are keyed by assessment: `<AssessmentID>/<angle>.jpg` and
+`<AssessmentID>/ErgoAssessment-<Customer>-<Date>.pdf` on Supabase, or the same
+names flat in the folder on Drive. Both backends overwrite in place on re-sync,
+so the link recorded in the sheet stays valid and duplicates don't pile up.
+`lib/storage.ts` is the only module that knows which backend is active.
 
 **Auth** is one shared password (`ADMIN_PASSWORD`) exchanged for an HMAC-signed,
 HttpOnly cookie. If the variable is unset the dashboard is open and says so in a
@@ -187,7 +220,9 @@ components/      pills, filter-bar, charts
 lib/
   schema.ts      the 62-column contract
   sheet.ts       read + upsert against the Sheets API
-  drive.ts       photo/PDF upload, sharing, HTML→PDF fallback
+  storage.ts     picks the backend; the rest of the app never names one
+  supabase.ts    Supabase Storage REST calls
+  drive.ts       Drive upload, sharing, HTML→PDF fallback
   pdf.ts         Chromium rendering + the report wrapper
   google.ts      service-account auth, REST helper
   query.ts       filtering, sorting, paging
@@ -198,6 +233,7 @@ reference/                 sheet headers, sample payload, old Apps Script
 context/CONTEXT.md         the original handoff spec
 scripts/
   init-sheet.mjs           setup + connectivity check
+  init-supabase.mjs        create the storage bucket and verify public reads
   get-drive-token.mjs      mint the Drive OAuth refresh token
   extract-report-css.mjs   regenerate the report stylesheet
   test-pdf.mjs             render a sample PDF locally
@@ -215,7 +251,10 @@ scripts/
   syncs for the same assessment landing within the same second could both append.
   The old Apps Script had the same behaviour; a `Purchase`-style dedupe pass on
   the Sheet is the fallback if it ever bites.
-- **Drive quota.** Uploads run as the OAuth account and count against its 15GB.
+- **Storage backend.** `/api/health` reports `storage` as `supabase` or `drive`.
+  If it says `drive` when you expected Supabase, the two Supabase variables
+  aren't reaching the deployment.
+- **Drive quota** (Drive path only). Uploads run as the OAuth account and count against its 15GB.
   Photos are ~60–150KB and a report PDF ~80KB, so roughly 500KB per assessment —
   about 30,000 assessments before that matters.
 - **Drive identity.** `/api/health` reports `driveAuth` as `oauth` or

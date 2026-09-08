@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
-import { driveThumbnailUrl } from "@/lib/drive";
+import { imageUrl } from "@/lib/storage";
 import { parseKeyed, parsePain, parseProducts, photoLinks, splitList } from "@/lib/format";
 import { checkApiSecret, describeError, errorResponse, jsonResponse, preflight } from "@/lib/http";
 import { isValidAssessmentId } from "@/lib/schema";
@@ -39,7 +39,7 @@ export async function GET(
       parsed: {
         photos: photoLinks(row).map((p) => ({
           ...p,
-          thumbnailUrl: driveThumbnailUrl(p.url),
+          thumbnailUrl: imageUrl(p.url),
         })),
         reportPdf: String(row["Report PDF"] ?? "") || null,
         pain: parsePain(row["All pain"]),

@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "sync:report-css": "node scripts/extract-report-css.mjs",
     "init:sheet": "node --env-file=.env.local scripts/init-sheet.mjs",
-    "auth:drive": "node --env-file=.env.local scripts/get-drive-token.mjs"
+    "auth:drive": "node --env-file=.env.local scripts/get-drive-token.mjs",
+    "init:supabase": "node --env-file=.env.local scripts/init-supabase.mjs"
   },
   "dependencies": {
     "@sparticuz/chromium": "^131.0.0",

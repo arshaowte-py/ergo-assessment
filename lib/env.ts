@@ -95,6 +95,19 @@ export const env = {
   get oauthRefreshToken() {
     return read("GOOGLE_OAUTH_REFRESH_TOKEN");
   },
+  /**
+   * Supabase Storage. When both of these are set they take over from Drive for
+   * photos and report PDFs — no quota, no consent screen, no expiring token.
+   */
+  get supabaseUrl() {
+    return read("SUPABASE_URL");
+  },
+  get supabaseServiceKey() {
+    return read("SUPABASE_SERVICE_ROLE_KEY");
+  },
+  get supabaseBucket() {
+    return read("SUPABASE_BUCKET", "ergo-assessments");
+  },
   get adminPassword() {
     return read("ADMIN_PASSWORD");
   },

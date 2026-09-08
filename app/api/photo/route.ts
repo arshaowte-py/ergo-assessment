@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
-import { uploadFile } from "@/lib/drive";
-import { env } from "@/lib/env";
+import { photoPath, putFile, storageConfigured } from "@/lib/storage";
 import { checkApiSecret, describeError, errorResponse, jsonResponse, preflight } from "@/lib/http";
 import { AssessmentRow, isValidAssessmentId, PHOTO_ANGLES, PHOTO_HEADERS, PhotoAngle } from "@/lib/schema";
 import { upsertRow } from "@/lib/sheet";
@@ -41,17 +40,17 @@ export async function POST(req: NextRequest) {
   const m = String(body.dataUrl ?? "").match(/^data:([^;,]+);base64,(.+)$/);
   if (!m) return errorResponse(req, "dataUrl must be a base64 data URI", 400);
 
-  if (!env.driveFolderId) {
-    return errorResponse(req, "DRIVE_FOLDER_ID is not configured", 500);
+  if (!storageConfigured()) {
+    return errorResponse(req, "No storage backend configured", 500);
   }
 
   try {
-    const file = await uploadFile({
-      name: `${id}_${angle}.jpg`,
+    const link = await putFile({
+      path: photoPath(id, angle),
+      fileName: `${id}_${angle}.jpg`,
       mimeType: m[1],
       data: Buffer.from(m[2], "base64"),
     });
-    const link = file.webViewLink ?? "";
 
     // A partial row: upsertRow merges it over whatever is already stored, so
     // this never clobbers assessment data written by /api/submit.

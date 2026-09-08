@@ -1,8 +1,7 @@
 import { NextRequest } from "next/server";
-import { uploadFile } from "@/lib/drive";
-import { env } from "@/lib/env";
 import { checkApiSecret, describeError, errorResponse, jsonResponse, preflight } from "@/lib/http";
 import { renderReportPdf, reportFileName } from "@/lib/pdf";
+import { photoPath, putFile, reportPath, storageBackend, storageConfigured } from "@/lib/storage";
 import { AssessmentRow, isValidAssessmentId, PHOTO_ANGLES, PHOTO_HEADERS, PhotoAngle, sanitizeRow } from "@/lib/schema";
 import { upsertRow } from "@/lib/sheet";
 
@@ -46,14 +45,15 @@ export async function POST(req: NextRequest) {
   const warnings: string[] = [];
 
   const photos = decodePhotos(body.photos, warnings);
-  if (photos.length && env.driveFolderId) {
+  if (photos.length && storageConfigured()) {
     const results = await Promise.allSettled(
       photos.map((p) =>
-        uploadFile({
-          name: `${id}_${p.angle}.jpg`,
+        putFile({
+          path: photoPath(id, p.angle),
+          fileName: `${id}_${p.angle}.jpg`,
           mimeType: p.mimeType,
           data: p.data,
-        }).then((f) => ({ angle: p.angle, link: f.webViewLink ?? "" })),
+        }).then((link) => ({ angle: p.angle, link })),
       ),
     );
     results.forEach((res, i) => {
@@ -63,12 +63,12 @@ export async function POST(req: NextRequest) {
         warnings.push(`photo:${photos[i].angle}: ${describeError(res.reason)}`);
       }
     });
-  } else if (photos.length && !env.driveFolderId) {
-    warnings.push("photos skipped: DRIVE_FOLDER_ID is not configured");
+  } else if (photos.length) {
+    warnings.push("photos skipped: no storage backend configured");
   }
 
   const reportHtml = typeof body.reportHTML === "string" ? body.reportHTML.trim() : "";
-  if (reportHtml && env.driveFolderId) {
+  if (reportHtml && storageConfigured()) {
     try {
       const name = reportFileName(
         String(row["Customer"] ?? ""),
@@ -76,14 +76,19 @@ export async function POST(req: NextRequest) {
         id,
       );
       const { buffer, engine } = await renderReportPdf(reportHtml, name.replace(/\.pdf$/, ""));
-      const file = await uploadFile({ name, mimeType: "application/pdf", data: buffer });
-      if (file.webViewLink) row["Report PDF"] = file.webViewLink;
+      const link = await putFile({
+        path: reportPath(id, name),
+        fileName: name,
+        mimeType: "application/pdf",
+        data: buffer,
+      });
+      if (link) row["Report PDF"] = link;
       if (engine === "drive") warnings.push("report rendered with the Drive fallback engine");
     } catch (err) {
       warnings.push(`report pdf: ${describeError(err)}`);
     }
-  } else if (reportHtml && !env.driveFolderId) {
-    warnings.push("report skipped: DRIVE_FOLDER_ID is not configured");
+  } else if (reportHtml) {
+    warnings.push("report skipped: no storage backend configured");
   }
 
   row["Last updated"] = new Date().toISOString();
@@ -95,6 +100,7 @@ export async function POST(req: NextRequest) {
       id,
       action: result.action,
       rowNumber: result.rowNumber,
+      storage: storageBackend(),
       photos: photoLinkSummary(result.row),
       reportPdf: String(result.row["Report PDF"] ?? "") || null,
       ...(warnings.length ? { warnings } : {}),
