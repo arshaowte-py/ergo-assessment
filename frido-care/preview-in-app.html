@@ -25,7 +25,7 @@ const CFG = Object.assign({
   apiSecret: "",
   storagePrefix: "fec",
   embedded: false,
-}, window.FRIDO_CARE_CONFIG || {});
+}, window.FRIDO_CARE_CONFIG || {embedded:true});
 const API_URL = CFG.apiUrl;
 const API_SECRET = CFG.apiSecret;
 /* Namespaced so the assessment's saved drafts can never collide with the
@@ -333,6 +333,24 @@ html.embedded .app{padding-top:0}
 .fbhint{font-size:10.5px;font-weight:600;color:var(--slate);margin-left:8px}
 .derived{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);background:var(--blue-soft);border-radius:5px;padding:1px 5px;margin-left:6px}
 
+
+/* ── PREVIEW ONLY — simulated Frido Care app chrome ─────────────────────── */
+:root{--fc-head:56px;--fc-tabs:64px}
+.fc-head{position:fixed;top:0;left:0;right:0;height:var(--fc-head);z-index:60;
+  background:var(--navy);color:#fff;display:flex;align-items:center;gap:12px;padding:0 16px}
+.fc-head .bk{font-size:22px;line-height:1;opacity:.9}
+.fc-head .ti{font-family:'Gilroy','Outfit',sans-serif;font-weight:700;font-size:16px}
+.fc-head .sp{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--brand)}
+.fc-tabs{position:fixed;left:0;right:0;bottom:0;height:calc(var(--fc-tabs) + env(safe-area-inset-bottom));
+  z-index:60;background:#fff;border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+.fc-tabs a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  text-decoration:none;color:var(--slate);font-size:10.5px;font-weight:600}
+.fc-tabs a .ic{font-size:19px;line-height:1}
+.fc-tabs a.on{color:var(--navy)} .fc-tabs a.on .ic{color:var(--brand)}
+html.embedded .app{padding-top:var(--fc-head)}
+.bnav{bottom:calc(var(--fc-tabs) + env(safe-area-inset-bottom))!important}
+.drawer .panel{top:var(--fc-head);bottom:calc(var(--fc-tabs) + env(safe-area-inset-bottom))}
+
 /* bottom nav */
 .bnav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);z-index:40;padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
 .bnav .in{max-width:860px;margin:0 auto;display:flex;gap:10px}
@@ -446,6 +464,7 @@ html.embedded .app{padding-top:0}
 </head>
 <body>
 
+<header class="fc-head"><span class="bk">&lsaquo;</span><span class="ti">Ergonomic Assessment</span><span class="sp">Care Services</span></header>
 <div class="app" id="app">
   <!-- Frido Care embed: set window.FRIDO_CARE_CONFIG before this file's script
        runs to point at the API, namespace storage, and hide the standalone
@@ -2177,5 +2196,12 @@ function init(){
 }
 document.addEventListener("DOMContentLoaded",init);
 </script>
+<nav class="fc-tabs">
+  <a href="#" onclick="return false"><span class="ic">&#8962;</span>Home</a>
+  <a href="#" onclick="return false"><span class="ic">&#9636;</span>Shop</a>
+  <a href="#" class="on" onclick="return false"><span class="ic">&#10010;</span>Care</a>
+  <a href="#" onclick="return false"><span class="ic">&#9776;</span>Orders</a>
+  <a href="#" onclick="return false"><span class="ic">&#9673;</span>Account</a>
+</nav>
 </body>
 </html>
